@@ -1,24 +1,24 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-const schema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     fullname: {
-        fristname: {
+        firstname: {
             type: String,
             required: true,
-            minlength: [3, 'Firstname must be at least 3 characters long']
+            minlength: [3, "Firstname must be at least 3 characters long"],
         },
         lastname: {
             type: String,
-            minlength: [3, 'Lastname must be at least 3 characters long'],
-        }
+            minlength: [3, "Lastname must be at least 3 characters long"],
+        },
     },
     email: {
         type: String,
         required: true,
         unique: true,
-        minlength: [5, 'Email must be at least 5 characters long'],
+        minlength: [5, "Email must be at least 5 characters long"],
     },
     password: {
         type: String,
@@ -28,21 +28,24 @@ const schema = new mongoose.Schema({
     socketId: {
         type: String,
     },
-})
+});
 
-userschema.methods.generateAuthToken = function () {
-    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
-    return token;
-}
+userSchema.methods.generateAuthToken = function () {
+    return jwt.sign(
+        { _id: this._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "24h" }
+    );
+};
 
-userschema.methods.comparePassword = async function (password) {
-    return await bcrypt.compare(password, this.password);
-}
+userSchema.methods.comparePassword = async function (password) {
+    return bcrypt.compare(password, this.password);
+};
 
-userschema.static.hashPassword = async function (password) {
-    return await bcrypt.hash(password, 10);
-}
+userSchema.statics.hashPassword = async function (password) {
+    return bcrypt.hash(password, 10);
+};
 
-const User = mongoose.model('user', userschema);
+const User = mongoose.model("User", userSchema);
 
-module.exports = userModel;
+module.exports = User;
